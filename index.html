@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Sentence Maker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='red'/></svg>">
+    <style>
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --card: #1e1e1e;
+            --border: #444;
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --accent: #FF9800;
+            --particle: #FF5252;
+        }
+        .light-mode {
+            --bg: #ffffff;
+            --text: #333333;
+            --card: #f8f9fa;
+            --border: #dee2e6;
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --accent: #fd7e14;
+            --particle: #dc3545;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .mode-toggle {
+            background: var(--primary);
+            color: white;
+        }
+        .builder {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--card);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .sentence-type {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .sentence-type button {
+            flex: 1;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 8px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .sentence-type button.active {
+            border-bottom: 2px solid var(--accent);
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--card);
+            border-radius: 8px;
+            min-height: 100px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        .japanese {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text);
+            line-height: 1.8;
+        }
+        .japanese .particle {
+            color: var(--particle);
+            font-weight: bold;
+        }
+        .english {
+            color: var(--secondary);
+            font-style: italic;
+        }
+        .hidden {
+            display: none;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .custom-input {
+            margin-top: 10px;
+        }
+        .custom-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Japanese Sentence Maker</h1>
+            <div class="controls">
+                <button class="mode-toggle" id="darkMode">Light</button>
+                <button id="langToggle">EN</button>
+            </div>
+        </div>
+        
+        <div class="sentence-type">
+            <button class="active" data-type="scv">SCV (AはBです)</button>
+            <button data-type="sov">SOV (AはBをV)</button>
+        </div>
+        
+        <div class="builder">
+            <select id="subject">
+                <option value="わたし/watashi/I">わたし (I)</option>
+                <option value="あなた/anata/You">あなた (You)</option>
+                <option value="かれ/kare/He">かれ (He)</option>
+                <option value="かのじょ/kanojo/She">かのじょ (She)</option>
+                <option value="わたしたち/watashitachi/We">わたしたち (We)</option>
+                <option value="あなたたち/anatatachi/You (plural)">あなたたち (You all)</option>
+                <option value="かれら/karera/They (male)">かれら (They - male)</option>
+                <option value="かのじょら/kanojora/They (female)">かのじょら (They - female)</option>
+                <option value="これ/kore/This">これ (This)</option>
+                <option value="それ/sore/That">それ (That)</option>
+                <option value="あれ/are/That (over there)">あれ (That over there)</option>
+                <option value="せんせい/sensei/Teacher">せんせい (Teacher)</option>
+                <option value="がくせい/gakusei/Student">がくせい (Student)</option>
+            </select>
+            
+            <div class="custom-input">
+                <label for="customSubject">または自分で入力:</label>
+                <input type="text" id="customSubject" placeholder="日本語で入力 (例: いぬ)">
+                <input type="text" id="customSubjectEn" placeholder="英語で入力 (例: dog)">
+            </div>
+            
+            <div id="complement-section">
+                <select id="complement">
+                    <option value="うれしい/ureshii/happy">うれしい (happy)</option>
+                    <option value="かなしい/kanashii/sad">かなしい (sad)</option>
+                    <option value="たのしい/tanoshii/fun">たのしい (fun)</option>
+                    <option value="おいしい/oishii/delicious">おいしい (delicious)</option>
+                    <option value="げんき/genki/energetic">げんき (energetic)</option>
+                </select>
+            </div>
+            
+            <div id="object-section" class="hidden">
+                <select id="object">
+                    <option value="ほん/hon/book">ほん (book)</option>
+                    <option value="りんご/ringo/apple">りんご (apple)</option>
+                    <option value="みず/mizu/water">みず (water)</option>
+                    <option value="ケーキ/keeki/cake">ケーキ (cake)</option>
+                    <option value="スマホ/sumaho/smartphone">スマホ (smartphone)</option>
+                </select>
+            </div>
+            
+            <div id="verb-section">
+                <select id="scv-verb">
+                    <option value="です/desu/am/is/are">です (am/is/are)</option>
+                    <option value="ではありません/dewa arimasen/am not/is not/are not">ではありません (am not/is not/are not)</option>
+                    <option value="ですか/desu ka/am/is/are">ですか？ (am/is/are?)</option>
+                </select>
+                
+                <select id="sov-verb" class="hidden">
+                    <option value="よみます/yomimasu/read">よみます (read)</option>
+                    <option value="たべます/tabemasu/eat">たべます (eat)</option>
+                    <option value="のみます/nomimasu/drink">のみます (drink)</option>
+                    <option value="かいます/kaimasu/buy">かいます (buy)</option>
+                    <option value="つくります/tsukurimasu/make">つくります (make)</option>
+                    <option value="みます/mimasu/watch">みます (watch)</option>
+                    <option value="ききます/kikimasu/listen">ききます (listen)</option>
+                    <option value="かきます/kakimasu/write">かきます (write)</option>
+                    <option value="はなします/hanashimasu/speak">はなします (speak)</option>
+                    <option value="いきます/ikimasu/go">いきます (go)</option>
+                    <option value="きます/kimasu/come">きます (come)</option>
+                    <option value="ねます/nemasu/sleep">ねます (sleep)</option>
+                    <option value="おきます/okimasu/wake up">おきます (wake up)</option>
+                    <option value="べんきょうします/benkyou shimasu/study">べんきょうします (study)</option>
+                    <option value="しごとします/shigoto shimasu/work">しごとします (work)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="result">
+            <div class="japanese" id="japanese"></div>
+            <div class="english" id="english"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Contact us<br>
+        <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
+    </div>
+
+    <script>
+        // 要素を取得
+        const darkBtn = document.getElementById('darkMode');
+        const langBtn = document.getElementById('langToggle');
+        const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
+        const subject = document.getElementById('subject');
+        const customSubject = document.getElementById('customSubject');
+        const customSubjectEn = document.getElementById('customSubjectEn');
+        const complement = document.getElementById('complement');
+        const object = document.getElementById('object');
+        const scvVerb = document.getElementById('scv-verb');
+        const sovVerb = document.getElementById('sov-verb');
+        const complementSection = document.getElementById('complement-section');
+        const objectSection = document.getElementById('object-section');
+        const japanese = document.getElementById('japanese');
+        const english = document.getElementById('english');
+        const body = document.body;
+        
+        // 初期設定
+        let englishMode = false;
+        let currentSentenceType = 'scv';
+        
+        // ダークモード切り替え
+        darkBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            darkBtn.textContent = isLight ? 'Dark' : 'Light';
+        });
+        
+        // 言語切り替え
+        langBtn.addEventListener('click', () => {
+            englishMode = !englishMode;
+            langBtn.textContent = englishMode ? 'JP' : 'EN';
+            updateSentence();
+        });
+        
+        // 文型切り替え
+        sentenceTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sentenceTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSentenceType = btn.dataset.type;
+                
+                if (currentSentenceType === 'scv') {
+                    complementSection.classList.remove('hidden');
+                    objectSection.classList.add('hidden');
+                    scvVerb.classList.remove('hidden');
+                    sovVerb.classList.add('hidden');
+                } else {
+                    complementSection.classList.add('hidden');
+                    objectSection.classList.remove('hidden');
+                    scvVerb.classList.add('hidden');
+                    sovVerb.classList.remove('hidden');
+                }
+                
+                updateSentence();
+            });
+        });
+        
+        // 文章を生成
+        function updateSentence() {
+            let subJp, subRom, subEn;
+            
+            if (customSubject.value.trim() !== '' && customSubjectEn.value.trim() !== '') {
+                subJp = customSubject.value.trim();
+                subRom = ''; // ローマ字は空に
+                subEn = customSubjectEn.value.trim();
+            } else {
+                [subJp, subRom, subEn] = subject.value.split('/');
+            }
+            
+            let sentenceJp = '';
+            let sentenceEn = '';
+            
+            if (currentSentenceType === 'scv') {
+                const [compJp, compRom, compEn] = complement.value.split('/');
+                const [verbJp, verbRom, verbEn] = scvVerb.value.split('/');
+                
+                sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}${verbJp}`;
+                sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
+                
+                if (verbJp.includes('か')) {
+                    sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} ${compEn}?`;
+                }
+            } else {
+                const [objJp, objRom, objEn] = object.value.split('/');
+                const [verbJp, verbRom, verbEn] = sovVerb.value.split('/');
+                
+                sentenceJp = `${subJp}<span class="particle">は</span> ${objJp}<span class="particle">を</span> ${verbJp}`;
+                sentenceEn = `${subEn} ${verbEn} ${objEn}`;
+            }
+            
+            if (englishMode) {
+                japanese.innerHTML = sentenceEn;
+                english.textContent = '';
+            } else {
+                japanese.innerHTML = sentenceJp;
+                english.textContent = sentenceEn;
+            }
+        }
+        
+        // 入力変更時のイベント
+        [subject, complement, object, scvVerb, sovVerb, customSubject, customSubjectEn].forEach(el => {
+            el.addEventListener('input', updateSentence);
+            el.addEventListener('change', updateSentence);
+        });
+        
+        // 初期表示
+        updateSentence();
+    </script>
+</body>
+</html>
