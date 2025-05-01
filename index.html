@@ -169,8 +169,8 @@
         </div>
         
         <div class="sentence-type">
-            <button class="active" data-type="scv">SCV (AはBです)</button>
-            <button data-type="sov">SOV (AはBをV)</button>
+            <button class="active" data-type="scv">SはCです</button>
+            <button data-type="sov">SはOをV</button>
         </div>
         
         <div class="builder">
@@ -186,14 +186,11 @@
                 <option value="これ/kore/This">これ (This)</option>
                 <option value="それ/sore/That">それ (That)</option>
                 <option value="あれ/are/That (over there)">あれ (That over there)</option>
-                <option value="せんせい/sensei/Teacher">せんせい (Teacher)</option>
-                <option value="がくせい/gakusei/Student">がくせい (Student)</option>
             </select>
             
             <div class="custom-input">
-                <label for="customSubject">または自分で入力:</label>
-                <input type="text" id="customSubject" placeholder="日本語で入力 (例: いぬ)">
-                <input type="text" id="customSubjectEn" placeholder="英語で入力 (例: dog)">
+                <label for="customSubject">自分で入力 (日本語):</label>
+                <input type="text" id="customSubject" placeholder="例: いぬ">
             </div>
             
             <div id="complement-section">
@@ -261,7 +258,6 @@
         const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
-        const customSubjectEn = document.getElementById('customSubjectEn');
         const complement = document.getElementById('complement');
         const object = document.getElementById('object');
         const scvVerb = document.getElementById('scv-verb');
@@ -315,22 +311,23 @@
         
         // 文章を生成
         function updateSentence() {
-            let subJp, subRom, subEn;
+            let subJp, subEn;
             
-            if (customSubject.value.trim() !== '' && customSubjectEn.value.trim() !== '') {
+            if (customSubject.value.trim() !== '') {
                 subJp = customSubject.value.trim();
-                subRom = ''; // ローマ字は空に
-                subEn = customSubjectEn.value.trim();
+                subEn = customSubject.value.trim(); // 英語表記も同じにする
             } else {
-                [subJp, subRom, subEn] = subject.value.split('/');
+                const [jp, , en] = subject.value.split('/');
+                subJp = jp;
+                subEn = en;
             }
             
             let sentenceJp = '';
             let sentenceEn = '';
             
             if (currentSentenceType === 'scv') {
-                const [compJp, compRom, compEn] = complement.value.split('/');
-                const [verbJp, verbRom, verbEn] = scvVerb.value.split('/');
+                const [compJp, , compEn] = complement.value.split('/');
+                const [verbJp, , verbEn] = scvVerb.value.split('/');
                 
                 sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}${verbJp}`;
                 sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
@@ -339,8 +336,8 @@
                     sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} ${compEn}?`;
                 }
             } else {
-                const [objJp, objRom, objEn] = object.value.split('/');
-                const [verbJp, verbRom, verbEn] = sovVerb.value.split('/');
+                const [objJp, , objEn] = object.value.split('/');
+                const [verbJp, , verbEn] = sovVerb.value.split('/');
                 
                 sentenceJp = `${subJp}<span class="particle">は</span> ${objJp}<span class="particle">を</span> ${verbJp}`;
                 sentenceEn = `${subEn} ${verbEn} ${objEn}`;
@@ -356,7 +353,7 @@
         }
         
         // 入力変更時のイベント
-        [subject, complement, object, scvVerb, sovVerb, customSubject, customSubjectEn].forEach(el => {
+        [subject, complement, object, scvVerb, sovVerb, customSubject].forEach(el => {
             el.addEventListener('input', updateSentence);
             el.addEventListener('change', updateSentence);
         });
