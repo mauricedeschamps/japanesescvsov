@@ -148,6 +148,29 @@
             color: var(--primary);
             text-decoration: none;
         }
+        .subject-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .subject-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: var(--card);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        .subject-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .adjective-space {
+            margin-right: 5px;
+        }
         .custom-input {
             margin-top: 10px;
         }
@@ -155,9 +178,6 @@
             display: block;
             margin-bottom: 5px;
             font-size: 0.9rem;
-        }
-        .adjective-space {
-            margin-right: 5px;
         }
     </style>
 </head>
@@ -177,24 +197,33 @@
         </div>
         
         <div class="builder">
-            <div class="custom-input">
-                <label for="customSubject">Enter the word:</label>
-                <input type="text" id="customSubject" placeholder="Subject (e.g. いぬ)">
+            <div class="subject-options">
+                <div class="subject-option selected" data-type="proper">Proper Noun</div>
+                <div class="subject-option" data-type="pronoun">Pronoun</div>
             </div>
             
-            <select id="subject" class="hidden">
-                <option value="わたし/watashi/I">わたし (I)</option>
-                <option value="あなた/anata/You">あなた (You)</option>
-                <option value="かれ/kare/He">かれ (He)</option>
-                <option value="かのじょ/kanojo/She">かのじょ (She)</option>
-                <option value="わたしたち/watashitachi/We">わたしたち (We)</option>
-                <option value="あなたたち/anatatachi/You (plural)">あなたたち (You all)</option>
-                <option value="かれら/karera/They (male)">かれら (They - male)</option>
-                <option value="かのじょら/kanojora/They (female)">かのじょら (They - female)</option>
-                <option value="これ/kore/This">これ (This)</option>
-                <option value="それ/sore/That">それ (That)</option>
-                <option value="あれ/are/That (over there)">あれ (That over there)</option>
-            </select>
+            <div id="proper-noun-section">
+                <div class="custom-input">
+                    <label for="customSubject">Enter proper noun:</label>
+                    <input type="text" id="customSubject" placeholder="e.g. たなか">
+                </div>
+            </div>
+            
+            <div id="pronoun-section" class="hidden">
+                <select id="subject">
+                    <option value="わたし/watashi/I">わたし (I)</option>
+                    <option value="あなた/anata/You">あなた (You)</option>
+                    <option value="かれ/kare/He">かれ (He)</option>
+                    <option value="かのじょ/kanojo/She">かのじょ (She)</option>
+                    <option value="わたしたち/watashitachi/We">わたしたち (We)</option>
+                    <option value="あなたたち/anatatachi/You (plural)">あなたたち (You all)</option>
+                    <option value="かれら/karera/They (male)">かれら (They - male)</option>
+                    <option value="かのじょら/kanojora/They (female)">かのじょら (They - female)</option>
+                    <option value="これ/kore/This">これ (This)</option>
+                    <option value="それ/sore/That">それ (That)</option>
+                    <option value="あれ/are/That (over there)">あれ (That over there)</option>
+                </select>
+            </div>
             
             <div id="complement-section">
                 <select id="complement">
@@ -259,12 +288,15 @@
         const darkBtn = document.getElementById('darkMode');
         const langBtn = document.getElementById('langToggle');
         const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
+        const subjectOptions = document.querySelectorAll('.subject-option');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
         const complement = document.getElementById('complement');
         const object = document.getElementById('object');
         const scvVerb = document.getElementById('scv-verb');
         const sovVerb = document.getElementById('sov-verb');
+        const properNounSection = document.getElementById('proper-noun-section');
+        const pronounSection = document.getElementById('pronoun-section');
         const complementSection = document.getElementById('complement-section');
         const objectSection = document.getElementById('object-section');
         const japanese = document.getElementById('japanese');
@@ -274,6 +306,7 @@
         // 初期設定
         let englishMode = false;
         let currentSentenceType = 'scv';
+        let currentSubjectType = 'proper';
         
         // ダークモード切り替え
         darkBtn.addEventListener('click', () => {
@@ -312,13 +345,32 @@
             });
         });
         
+        // 主語タイプ切り替え
+        subjectOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                subjectOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentSubjectType = option.dataset.type;
+                
+                if (currentSubjectType === 'proper') {
+                    properNounSection.classList.remove('hidden');
+                    pronounSection.classList.add('hidden');
+                } else {
+                    properNounSection.classList.add('hidden');
+                    pronounSection.classList.remove('hidden');
+                }
+                
+                updateSentence();
+            });
+        });
+        
         // 文章を生成
         function updateSentence() {
             let subJp, subEn;
             
-            if (customSubject.value.trim() !== '') {
-                subJp = customSubject.value.trim();
-                subEn = customSubject.value.trim();
+            if (currentSubjectType === 'proper') {
+                subJp = customSubject.value.trim() || '___';
+                subEn = customSubject.value.trim() || '___';
             } else {
                 const [jp, , en] = subject.value.split('/');
                 subJp = jp;
@@ -355,18 +407,6 @@
                 english.textContent = sentenceEn;
             }
         }
-        
-        // カスタム入力欄のフォーカス時に選択肢を非表示
-        customSubject.addEventListener('focus', () => {
-            subject.classList.add('hidden');
-        });
-        
-        // カスタム入力欄が空でフォーカスが外れたら選択肢を表示
-        customSubject.addEventListener('blur', () => {
-            if (customSubject.value.trim() === '') {
-                subject.classList.remove('hidden');
-            }
-        });
         
         // 入力変更時のイベント
         [subject, complement, object, scvVerb, sovVerb, customSubject].forEach(el => {
