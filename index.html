@@ -148,12 +148,12 @@
             color: var(--primary);
             text-decoration: none;
         }
-        .subject-options {
+        .subject-options, .complement-options {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
         }
-        .subject-option {
+        .subject-option, .complement-option {
             flex: 1;
             text-align: center;
             padding: 10px;
@@ -163,7 +163,7 @@
             border: 1px solid var(--border);
             transition: all 0.3s;
         }
-        .subject-option.selected {
+        .subject-option.selected, .complement-option.selected {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
@@ -197,6 +197,7 @@
         </div>
         
         <div class="builder">
+            <!-- Subject Section -->
             <div class="subject-options">
                 <div class="subject-option selected" data-type="proper">Proper Noun</div>
                 <div class="subject-option" data-type="pronoun">Pronoun</div>
@@ -225,14 +226,44 @@
                 </select>
             </div>
             
+            <!-- Complement Section -->
             <div id="complement-section">
-                <select id="complement">
-                    <option value="うれしい/ureshii/happy">うれしい (happy)</option>
-                    <option value="かなしい/kanashii/sad">かなしい (sad)</option>
-                    <option value="たのしい/tanoshii/fun">たのしい (fun)</option>
-                    <option value="おいしい/oishii/delicious">おいしい (delicious)</option>
-                    <option value="げんき/genki/energetic">げんき (energetic)</option>
-                </select>
+                <div class="complement-options">
+                    <div class="complement-option selected" data-type="adjective">Adjective</div>
+                    <div class="complement-option" data-type="noun">Noun</div>
+                </div>
+                
+                <div id="adjective-complement-section">
+                    <select id="adjective-complement">
+                        <option value="うれしい/ureshii/happy">うれしい (happy)</option>
+                        <option value="かなしい/kanashii/sad">かなしい (sad)</option>
+                        <option value="たのしい/tanoshii/fun">たのしい (fun)</option>
+                        <option value="おいしい/oishii/delicious">おいしい (delicious)</option>
+                        <option value="げんき/genki/energetic">げんき (energetic)</option>
+                        <option value="いい/ii/good">いい (good)</option>
+                        <option value="わるい/warui/bad">わるい (bad)</option>
+                        <option value="おおきい/ookii/big">おおきい (big)</option>
+                        <option value="ちいさい/chiisai/small">ちいさい (small)</option>
+                        <option value="たかい/takai/expensive">たかい (expensive)</option>
+                        <option value="やすい/yasui/cheap">やすい (cheap)</option>
+                        <option value="ながい/nagai/long">ながい (long)</option>
+                        <option value="みじかい/mijikai/short">みじかい (short)</option>
+                        <option value="はやい/hayai/fast">はやい (fast)</option>
+                        <option value="おそい/osoi/slow">おそい (slow)</option>
+                        <option value="あつい/atsui/hot">あつい (hot)</option>
+                        <option value="さむい/samui/cold">さむい (cold)</option>
+                        <option value="むずかしい/muzukashii/difficult">むずかしい (difficult)</option>
+                        <option value="やさしい/yasashii/easy">やさしい (easy)</option>
+                        <option value="おもしろい/omoshiroi/interesting">おもしろい (interesting)</option>
+                    </select>
+                </div>
+                
+                <div id="noun-complement-section" class="hidden">
+                    <div class="custom-input">
+                        <label for="customNounComplement">Enter noun:</label>
+                        <input type="text" id="customNounComplement" placeholder="e.g. がくせい">
+                    </div>
+                </div>
             </div>
             
             <div id="object-section" class="hidden">
@@ -289,14 +320,18 @@
         const langBtn = document.getElementById('langToggle');
         const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
         const subjectOptions = document.querySelectorAll('.subject-option');
+        const complementOptions = document.querySelectorAll('.complement-option');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
-        const complement = document.getElementById('complement');
+        const adjectiveComplement = document.getElementById('adjective-complement');
+        const customNounComplement = document.getElementById('customNounComplement');
         const object = document.getElementById('object');
         const scvVerb = document.getElementById('scv-verb');
         const sovVerb = document.getElementById('sov-verb');
         const properNounSection = document.getElementById('proper-noun-section');
         const pronounSection = document.getElementById('pronoun-section');
+        const adjectiveComplementSection = document.getElementById('adjective-complement-section');
+        const nounComplementSection = document.getElementById('noun-complement-section');
         const complementSection = document.getElementById('complement-section');
         const objectSection = document.getElementById('object-section');
         const japanese = document.getElementById('japanese');
@@ -307,6 +342,7 @@
         let englishMode = false;
         let currentSentenceType = 'scv';
         let currentSubjectType = 'proper';
+        let currentComplementType = 'adjective';
         
         // ダークモード切り替え
         darkBtn.addEventListener('click', () => {
@@ -364,10 +400,31 @@
             });
         });
         
+        // 補語タイプ切り替え
+        complementOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                complementOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentComplementType = option.dataset.type;
+                
+                if (currentComplementType === 'adjective') {
+                    adjectiveComplementSection.classList.remove('hidden');
+                    nounComplementSection.classList.add('hidden');
+                } else {
+                    adjectiveComplementSection.classList.add('hidden');
+                    nounComplementSection.classList.remove('hidden');
+                }
+                
+                updateSentence();
+            });
+        });
+        
         // 文章を生成
         function updateSentence() {
             let subJp, subEn;
+            let compJp, compEn;
             
+            // 主語の取得
             if (currentSubjectType === 'proper') {
                 subJp = customSubject.value.trim() || '___';
                 subEn = customSubject.value.trim() || '___';
@@ -377,19 +434,36 @@
                 subEn = en;
             }
             
+            // 補語の取得
+            if (currentComplementType === 'adjective') {
+                const [adjJp, , adjEn] = adjectiveComplement.value.split('/');
+                compJp = adjJp;
+                compEn = adjEn;
+            } else {
+                compJp = customNounComplement.value.trim() || '___';
+                compEn = customNounComplement.value.trim() || '___';
+            }
+            
             let sentenceJp = '';
             let sentenceEn = '';
             
             if (currentSentenceType === 'scv') {
-                const [compJp, , compEn] = complement.value.split('/');
                 const [verbJp, , verbEn] = scvVerb.value.split('/');
                 
-                // 形容詞と「です」の間にスペースを追加
+                // 形容詞/名詞と「です」の間にスペースを追加
                 sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}<span class="adjective-space"> </span>${verbJp}`;
-                sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
                 
-                if (verbJp.includes('か')) {
-                    sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} ${compEn}?`;
+                // 英語訳の生成
+                if (currentComplementType === 'adjective') {
+                    sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
+                    if (verbJp.includes('か')) {
+                        sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} ${compEn}?`;
+                    }
+                } else {
+                    sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} a ${compEn}`;
+                    if (verbJp.includes('か')) {
+                        sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} a ${compEn}?`;
+                    }
                 }
             } else {
                 const [objJp, , objEn] = object.value.split('/');
@@ -409,7 +483,7 @@
         }
         
         // 入力変更時のイベント
-        [subject, complement, object, scvVerb, sovVerb, customSubject].forEach(el => {
+        [subject, adjectiveComplement, customSubject, customNounComplement, object, scvVerb, sovVerb].forEach(el => {
             el.addEventListener('input', updateSentence);
             el.addEventListener('change', updateSentence);
         });
