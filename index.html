@@ -156,6 +156,9 @@
             margin-bottom: 5px;
             font-size: 0.9rem;
         }
+        .adjective-space {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -174,7 +177,12 @@
         </div>
         
         <div class="builder">
-            <select id="subject">
+            <div class="custom-input">
+                <label for="customSubject">Enter the word:</label>
+                <input type="text" id="customSubject" placeholder="Subject (e.g. いぬ)">
+            </div>
+            
+            <select id="subject" class="hidden">
                 <option value="わたし/watashi/I">わたし (I)</option>
                 <option value="あなた/anata/You">あなた (You)</option>
                 <option value="かれ/kare/He">かれ (He)</option>
@@ -187,11 +195,6 @@
                 <option value="それ/sore/That">それ (That)</option>
                 <option value="あれ/are/That (over there)">あれ (That over there)</option>
             </select>
-            
-            <div class="custom-input">
-                <label for="customSubject">自分で入力 (日本語):</label>
-                <input type="text" id="customSubject" placeholder="例: いぬ">
-            </div>
             
             <div id="complement-section">
                 <select id="complement">
@@ -315,7 +318,7 @@
             
             if (customSubject.value.trim() !== '') {
                 subJp = customSubject.value.trim();
-                subEn = customSubject.value.trim(); // 英語表記も同じにする
+                subEn = customSubject.value.trim();
             } else {
                 const [jp, , en] = subject.value.split('/');
                 subJp = jp;
@@ -329,7 +332,8 @@
                 const [compJp, , compEn] = complement.value.split('/');
                 const [verbJp, , verbEn] = scvVerb.value.split('/');
                 
-                sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}${verbJp}`;
+                // 形容詞と「です」の間にスペースを追加
+                sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}<span class="adjective-space"> </span>${verbJp}`;
                 sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
                 
                 if (verbJp.includes('か')) {
@@ -351,6 +355,18 @@
                 english.textContent = sentenceEn;
             }
         }
+        
+        // カスタム入力欄のフォーカス時に選択肢を非表示
+        customSubject.addEventListener('focus', () => {
+            subject.classList.add('hidden');
+        });
+        
+        // カスタム入力欄が空でフォーカスが外れたら選択肢を表示
+        customSubject.addEventListener('blur', () => {
+            if (customSubject.value.trim() === '') {
+                subject.classList.remove('hidden');
+            }
+        });
         
         // 入力変更時のイベント
         [subject, complement, object, scvVerb, sovVerb, customSubject].forEach(el => {
