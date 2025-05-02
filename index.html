@@ -148,12 +148,12 @@
             color: var(--primary);
             text-decoration: none;
         }
-        .subject-options, .complement-options {
+        .subject-options, .complement-options, .object-options {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
         }
-        .subject-option, .complement-option {
+        .subject-option, .complement-option, .object-option {
             flex: 1;
             text-align: center;
             padding: 10px;
@@ -163,7 +163,7 @@
             border: 1px solid var(--border);
             transition: all 0.3s;
         }
-        .subject-option.selected, .complement-option.selected {
+        .subject-option.selected, .complement-option.selected, .object-option.selected {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
@@ -205,6 +205,13 @@
             background: var(--accent);
             color: white;
             border-color: var(--accent);
+        }
+        .verb-note {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-style: italic;
+            margin-top: -8px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -308,9 +315,9 @@
                 
                 <select id="scv-verb">
                     <!-- Past Tense -->
-                    <option value="でした/deshita/was/were" data-tense="past" data-type="affirmative">でした (was/were)。</option>
-                    <option value="ではありませんでした/dewa arimasen deshita/was not/were not" data-tense="past" data-type="negative">ではありませんでした (was not/were not)。</option>
-                    <option value="でしたか/deshita ka/was/were" data-tense="past" data-type="question">でしたか？ (was/were?)</option>
+                    <option value="でした/deshita/be" data-tense="past" data-type="affirmative">でした (be)。</option>
+                    <option value="ではありませんでした/dewa arimasen deshita/be not" data-tense="past" data-type="negative">ではありませんでした (be not)。</option>
+                    <option value="でしたか/deshita ka/be" data-tense="past" data-type="question">でしたか？ (be?)</option>
                     
                     <!-- Present Tense -->
                     <option value="です/desu/be" data-tense="present" data-type="affirmative">です (be)。</option>
@@ -324,32 +331,72 @@
                 </select>
             </div>
             
+            <!-- Object Section for SOV -->
             <div id="object-section" class="hidden">
-                <select id="object">
-                    <option value="ほん/hon/book">ほん (book)</option>
-                    <option value="りんご/ringo/apple">りんご (apple)</option>
-                    <option value="みず/mizu/water">みず (water)</option>
-                    <option value="ケーキ/keeki/cake">ケーキ (cake)</option>
-                    <option value="スマホ/sumaho/smartphone">スマホ (smartphone)</option>
-                </select>
+                <div class="object-options">
+                    <div class="object-option selected" data-type="person">Person</div>
+                    <div class="object-option" data-type="thing">Thing</div>
+                </div>
                 
-                <select id="sov-verb" class="hidden">
-                    <option value="よみます/yomimasu/read">よみます (read)</option>
-                    <option value="たべます/tabemasu/eat">たべます (eat)</option>
-                    <option value="のみます/nomimasu/drink">のみます (drink)</option>
-                    <option value="かいます/kaimasu/buy">かいます (buy)</option>
-                    <option value="つくります/tsukurimasu/make">つくります (make)</option>
-                    <option value="みます/mimasu/watch">みます (watch)</option>
-                    <option value="ききます/kikimasu/listen">ききます (listen)</option>
-                    <option value="かきます/kakimasu/write">かきます (write)</option>
-                    <option value="はなします/hanashimasu/speak">はなします (speak)</option>
-                    <option value="いきます/ikimasu/go">いきます (go)</option>
-                    <option value="きます/kimasu/come">きます (come)</option>
-                    <option value="ねます/nemasu/sleep">ねます (sleep)</option>
-                    <option value="おきます/okimasu/wake up">おきます (wake up)</option>
-                    <option value="べんきょうします/benkyou shimasu/study">べんきょうします (study)</option>
-                    <option value="しごとします/shigoto shimasu/work">しごとします (work)</option>
+                <div id="person-object-section">
+                    <div class="custom-input">
+                        <label for="customPersonObject">Enter person:</label>
+                        <input type="text" id="customPersonObject" placeholder="e.g. せんせい">
+                    </div>
+                    <div class="hint">Or select from pronouns:</div>
+                    <select id="person-object">
+                        <option value="わたし/watashi/me">わたし (me)</option>
+                        <option value="あなた/anata/you">あなた (you)</option>
+                        <option value="かれ/kare/him">かれ (him)</option>
+                        <option value="かのじょ/kanojo/her">かのじょ (her)</option>
+                        <option value="わたしたち/watashitachi/us">わたしたち (us)</option>
+                        <option value="あなたたち/anatatachi/you (plural)">あなたたち (you all)</option>
+                        <option value="かれら/karera/them (male)">かれら (them - male)</option>
+                        <option value="かのじょら/kanojora/them (female)">かのじょら (them - female)</option>
+                    </select>
+                </div>
+                
+                <div id="thing-object-section" class="hidden">
+                    <div class="custom-input">
+                        <label for="customThingObject">Enter thing:</label>
+                        <input type="text" id="customThingObject" placeholder="e.g. ほん">
+                    </div>
+                    <div class="hint">Or select common objects:</div>
+                    <select id="thing-object">
+                        <option value="ほん/hon/book">ほん (book)</option>
+                        <option value="りんご/ringo/apple">りんご (apple)</option>
+                        <option value="みず/mizu/water">みず (water)</option>
+                        <option value="ケーキ/keeki/cake">ケーキ (cake)</option>
+                        <option value="スマホ/sumaho/smartphone">スマホ (smartphone)</option>
+                        <option value="メール/meeru/email">メール (email)</option>
+                        <option value="えいご/eigo/English">えいご (English)</option>
+                        <option value="にほんご/nihongo/Japanese">にほんご (Japanese)</option>
+                        <option value="おんがく/ongaku/music">おんがく (music)</option>
+                        <option value="えいが/eiga/movie">えいが (movie)</option>
+                        <option value="しょくじ/shokuji/meal">しょくじ (meal)</option>
+                        <option value="おさけ/osake/alcohol">おさけ (alcohol)</option>
+                        <option value="コーヒー/koohii/coffee">コーヒー (coffee)</option>
+                    </select>
+                </div>
+                
+                <select id="sov-verb">
+                    <option value="よみます/yomimasu/read" data-type="transitive">よみます (read)</option>
+                    <option value="たべます/tabemasu/eat" data-type="transitive">たべます (eat)</option>
+                    <option value="のみます/nomimasu/drink" data-type="transitive">のみます (drink)</option>
+                    <option value="かいます/kaimasu/buy" data-type="transitive">かいます (buy)</option>
+                    <option value="つくります/tsukurimasu/make" data-type="transitive">つくります (make)</option>
+                    <option value="みます/mimasu/watch" data-type="transitive">みます (watch)</option>
+                    <option value="ききます/kikimasu/listen" data-type="transitive">ききます (listen)</option>
+                    <option value="かきます/kakimasu/write" data-type="transitive">かきます (write)</option>
+                    <option value="はなします/hanashimasu/speak" data-type="transitive">はなします (speak)</option>
+                    <option value="いきます/ikimasu/go" data-type="intransitive">いきます (go) [intransitive]</option>
+                    <option value="きます/kimasu/come" data-type="intransitive">きます (come) [intransitive]</option>
+                    <option value="ねます/nemasu/sleep" data-type="intransitive">ねます (sleep) [intransitive]</option>
+                    <option value="おきます/okimasu/wake up" data-type="intransitive">おきます (wake up) [intransitive]</option>
+                    <option value="べんきょうします/benkyou shimasu/study" data-type="transitive">べんきょうします (study)</option>
+                    <option value="しごとします/shigoto shimasu/work" data-type="intransitive">しごとします (work) [intransitive]</option>
                 </select>
+                <div class="verb-note">[intransitive] = does not take an object (自動詞)</div>
             </div>
         </div>
         
@@ -371,22 +418,24 @@
         const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
         const subjectOptions = document.querySelectorAll('.subject-option');
         const complementOptions = document.querySelectorAll('.complement-option');
+        const objectOptions = document.querySelectorAll('.object-option');
         const tenseOptions = document.querySelectorAll('.tense-option');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
         const customAdjective = document.getElementById('customAdjective');
         const adjectiveComplement = document.getElementById('adjective-complement');
         const customNounComplement = document.getElementById('customNounComplement');
-        const object = document.getElementById('object');
+        const customPersonObject = document.getElementById('customPersonObject');
+        const personObject = document.getElementById('person-object');
+        const customThingObject = document.getElementById('customThingObject');
+        const thingObject = document.getElementById('thing-object');
+        const objectSection = document.getElementById('object-section');
+        const personObjectSection = document.getElementById('person-object-section');
+        const thingObjectSection = document.getElementById('thing-object-section');
         const scvVerb = document.getElementById('scv-verb');
         const sovVerb = document.getElementById('sov-verb');
-        const properNounSection = document.getElementById('proper-noun-section');
-        const pronounSection = document.getElementById('pronoun-section');
-        const adjectiveComplementSection = document.getElementById('adjective-complement-section');
-        const nounComplementSection = document.getElementById('noun-complement-section');
-        const complementSection = document.getElementById('complement-section');
-        const objectSection = document.getElementById('object-section');
         const scvVerbSection = document.getElementById('scv-verb-section');
+        const complementSection = document.getElementById('complement-section');
         const japanese = document.getElementById('japanese');
         const english = document.getElementById('english');
         const body = document.body;
@@ -396,6 +445,7 @@
         let currentSentenceType = 'scv';
         let currentSubjectType = 'proper';
         let currentComplementType = 'adjective';
+        let currentObjectType = 'person';
         let currentTense = 'past';
         
         // ダークモード切り替え
@@ -423,12 +473,10 @@
                     complementSection.classList.remove('hidden');
                     objectSection.classList.add('hidden');
                     scvVerbSection.classList.remove('hidden');
-                    sovVerb.classList.add('hidden');
                 } else {
                     complementSection.classList.add('hidden');
                     objectSection.classList.remove('hidden');
                     scvVerbSection.classList.add('hidden');
-                    sovVerb.classList.remove('hidden');
                 }
                 
                 updateSentence();
@@ -473,6 +521,25 @@
             });
         });
         
+        // 目的語タイプ切り替え
+        objectOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                objectOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentObjectType = option.dataset.type;
+                
+                if (currentObjectType === 'person') {
+                    personObjectSection.classList.remove('hidden');
+                    thingObjectSection.classList.add('hidden');
+                } else {
+                    personObjectSection.classList.add('hidden');
+                    thingObjectSection.classList.remove('hidden');
+                }
+                
+                updateSentence();
+            });
+        });
+        
         // 時制切り替え
         tenseOptions.forEach(option => {
             option.addEventListener('click', () => {
@@ -510,10 +577,52 @@
             updateSentence();
         });
         
+        // カスタム目的語入力時に選択肢を無視
+        customPersonObject.addEventListener('input', () => {
+            if (customPersonObject.value.trim() !== '') {
+                personObject.disabled = true;
+            } else {
+                personObject.disabled = false;
+            }
+            updateSentence();
+        });
+        
+        customThingObject.addEventListener('input', () => {
+            if (customThingObject.value.trim() !== '') {
+                thingObject.disabled = true;
+            } else {
+                thingObject.disabled = false;
+            }
+            updateSentence();
+        });
+        
+        // 自動詞選択時に目的語を無視
+        sovVerb.addEventListener('change', () => {
+            const selectedVerb = sovVerb.options[sovVerb.selectedIndex];
+            const verbType = selectedVerb.dataset.type;
+            
+            if (verbType === 'intransitive') {
+                document.querySelector('.object-option[data-type="person"]').click();
+                personObjectSection.classList.add('hidden');
+                thingObjectSection.classList.add('hidden');
+                document.querySelector('.object-options').classList.add('hidden');
+            } else {
+                document.querySelector('.object-options').classList.remove('hidden');
+                if (currentObjectType === 'person') {
+                    personObjectSection.classList.remove('hidden');
+                } else {
+                    thingObjectSection.classList.remove('hidden');
+                }
+            }
+            
+            updateSentence();
+        });
+        
         // 文章を生成
         function updateSentence() {
             let subJp, subEn;
             let compJp, compEn;
+            let objJp = '', objEn = '';
             
             // 主語の取得
             if (currentSubjectType === 'proper') {
@@ -525,19 +634,49 @@
                 subEn = en;
             }
             
-            // 補語の取得
-            if (currentComplementType === 'adjective') {
-                if (customAdjective.value.trim() !== '') {
-                    compJp = customAdjective.value.trim();
-                    compEn = customAdjective.value.trim();
+            // 補語の取得 (SCV文型の場合)
+            if (currentSentenceType === 'scv') {
+                if (currentComplementType === 'adjective') {
+                    if (customAdjective.value.trim() !== '') {
+                        compJp = customAdjective.value.trim();
+                        compEn = customAdjective.value.trim();
+                    } else {
+                        const [adjJp, , adjEn] = adjectiveComplement.value.split('/');
+                        compJp = adjJp;
+                        compEn = adjEn;
+                    }
                 } else {
-                    const [adjJp, , adjEn] = adjectiveComplement.value.split('/');
-                    compJp = adjJp;
-                    compEn = adjEn;
+                    compJp = customNounComplement.value.trim() || '___';
+                    compEn = customNounComplement.value.trim() || '___';
                 }
-            } else {
-                compJp = customNounComplement.value.trim() || '___';
-                compEn = customNounComplement.value.trim() || '___';
+            }
+            
+            // 目的語の取得 (SOV文型の場合)
+            if (currentSentenceType === 'sov') {
+                const selectedVerb = sovVerb.options[sovVerb.selectedIndex];
+                const verbType = selectedVerb.dataset.type;
+                
+                if (verbType !== 'intransitive') {
+                    if (currentObjectType === 'person') {
+                        if (customPersonObject.value.trim() !== '') {
+                            objJp = customPersonObject.value.trim();
+                            objEn = customPersonObject.value.trim();
+                        } else {
+                            const [jp, , en] = personObject.value.split('/');
+                            objJp = jp;
+                            objEn = en;
+                        }
+                    } else {
+                        if (customThingObject.value.trim() !== '') {
+                            objJp = customThingObject.value.trim();
+                            objEn = customThingObject.value.trim();
+                        } else {
+                            const [jp, , en] = thingObject.value.split('/');
+                            objJp = jp;
+                            objEn = en;
+                        }
+                    }
+                }
             }
             
             let sentenceJp = '';
@@ -566,11 +705,17 @@
                     }
                 }
             } else {
-                const [objJp, , objEn] = object.value.split('/');
                 const [verbJp, , verbEn] = sovVerb.value.split('/');
+                const selectedVerb = sovVerb.options[sovVerb.selectedIndex];
+                const verbType = selectedVerb.dataset.type;
                 
-                sentenceJp = `${subJp}<span class="particle">は</span> ${objJp}<span class="particle">を</span> ${verbJp}`;
-                sentenceEn = `${subEn} ${verbEn} ${objEn}`;
+                if (verbType === 'intransitive') {
+                    sentenceJp = `${subJp}<span class="particle">は</span> ${verbJp}`;
+                    sentenceEn = `${subEn} ${verbEn}`;
+                } else {
+                    sentenceJp = `${subJp}<span class="particle">は</span> ${objJp}<span class="particle">を</span> ${verbJp}`;
+                    sentenceEn = `${subEn} ${verbEn} ${objEn}`;
+                }
             }
             
             if (englishMode) {
@@ -581,12 +726,6 @@
                 english.textContent = sentenceEn;
             }
         }
-        
-        // 入力変更時のイベント
-        [subject, adjectiveComplement, customSubject, customAdjective, customNounComplement, object, scvVerb, sovVerb].forEach(el => {
-            el.addEventListener('input', updateSentence);
-            el.addEventListener('change', updateSentence);
-        });
         
         // 初期表示 (過去形を選択)
         document.querySelector('.tense-option[data-tense="past"]').click();
