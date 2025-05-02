@@ -179,6 +179,12 @@
             margin-bottom: 5px;
             font-size: 0.9rem;
         }
+        .hint {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +240,11 @@
                 </div>
                 
                 <div id="adjective-complement-section">
+                    <div class="custom-input">
+                        <label for="customAdjective">Enter adjective:</label>
+                        <input type="text" id="customAdjective" placeholder="e.g. うれしい">
+                    </div>
+                    <div class="hint">Or select from common adjectives:</div>
                     <select id="adjective-complement">
                         <option value="うれしい/ureshii/happy">うれしい (happy)</option>
                         <option value="かなしい/kanashii/sad">かなしい (sad)</option>
@@ -323,6 +334,7 @@
         const complementOptions = document.querySelectorAll('.complement-option');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
+        const customAdjective = document.getElementById('customAdjective');
         const adjectiveComplement = document.getElementById('adjective-complement');
         const customNounComplement = document.getElementById('customNounComplement');
         const object = document.getElementById('object');
@@ -419,6 +431,16 @@
             });
         });
         
+        // カスタム形容詞入力時に選択肢を無視
+        customAdjective.addEventListener('input', () => {
+            if (customAdjective.value.trim() !== '') {
+                adjectiveComplement.disabled = true;
+            } else {
+                adjectiveComplement.disabled = false;
+            }
+            updateSentence();
+        });
+        
         // 文章を生成
         function updateSentence() {
             let subJp, subEn;
@@ -436,9 +458,14 @@
             
             // 補語の取得
             if (currentComplementType === 'adjective') {
-                const [adjJp, , adjEn] = adjectiveComplement.value.split('/');
-                compJp = adjJp;
-                compEn = adjEn;
+                if (customAdjective.value.trim() !== '') {
+                    compJp = customAdjective.value.trim();
+                    compEn = customAdjective.value.trim();
+                } else {
+                    const [adjJp, , adjEn] = adjectiveComplement.value.split('/');
+                    compJp = adjJp;
+                    compEn = adjEn;
+                }
             } else {
                 compJp = customNounComplement.value.trim() || '___';
                 compEn = customNounComplement.value.trim() || '___';
@@ -483,7 +510,7 @@
         }
         
         // 入力変更時のイベント
-        [subject, adjectiveComplement, customSubject, customNounComplement, object, scvVerb, sovVerb].forEach(el => {
+        [subject, adjectiveComplement, customSubject, customAdjective, customNounComplement, object, scvVerb, sovVerb].forEach(el => {
             el.addEventListener('input', updateSentence);
             el.addEventListener('change', updateSentence);
         });
