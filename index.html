@@ -185,6 +185,27 @@
             margin-top: -5px;
             margin-bottom: 10px;
         }
+        .tense-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .tense-option {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: var(--card);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .tense-option.selected {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -211,7 +232,7 @@
             
             <div id="proper-noun-section">
                 <div class="custom-input">
-                    <label for="customSubject">Enter proper noun:</label>
+                    <label for="customSubject">Enter subject:</label>
                     <input type="text" id="customSubject" placeholder="e.g. たなか">
                 </div>
             </div>
@@ -277,6 +298,32 @@
                 </div>
             </div>
             
+            <!-- Verb Section for SCV -->
+            <div id="scv-verb-section">
+                <div class="tense-options">
+                    <div class="tense-option selected" data-tense="past">Past</div>
+                    <div class="tense-option" data-tense="present">Present</div>
+                    <div class="tense-option" data-tense="future">Future</div>
+                </div>
+                
+                <select id="scv-verb">
+                    <!-- Past Tense -->
+                    <option value="でした/deshita/was/were" data-tense="past" data-type="affirmative">でした (was/were)。</option>
+                    <option value="ではありませんでした/dewa arimasen deshita/was not/were not" data-tense="past" data-type="negative">ではありませんでした (was not/were not)。</option>
+                    <option value="でしたか/deshita ka/was/were" data-tense="past" data-type="question">でしたか？ (was/were?)</option>
+                    
+                    <!-- Present Tense -->
+                    <option value="です/desu/be" data-tense="present" data-type="affirmative">です (be)。</option>
+                    <option value="ではありません/dewa arimasen/be not" data-tense="present" data-type="negative">ではありません (be not)。</option>
+                    <option value="ですか/desu ka/be" data-tense="present" data-type="question">ですか？ (be?)</option>
+                    
+                    <!-- Future Tense -->
+                    <option value="でしょう/deshou/will be" data-tense="future" data-type="affirmative">でしょう (will be)。</option>
+                    <option value="ではないでしょう/dewa nai deshou/will not be" data-tense="future" data-type="negative">ではないでしょう (will not be)。</option>
+                    <option value="でしょうか/deshou ka/will be" data-tense="future" data-type="question">でしょうか？ (will be?)</option>
+                </select>
+            </div>
+            
             <div id="object-section" class="hidden">
                 <select id="object">
                     <option value="ほん/hon/book">ほん (book)</option>
@@ -284,14 +331,6 @@
                     <option value="みず/mizu/water">みず (water)</option>
                     <option value="ケーキ/keeki/cake">ケーキ (cake)</option>
                     <option value="スマホ/sumaho/smartphone">スマホ (smartphone)</option>
-                </select>
-            </div>
-            
-            <div id="verb-section">
-                <select id="scv-verb">
-                    <option value="です/desu/am/is/are">です (am/is/are)</option>
-                    <option value="ではありません/dewa arimasen/am not/is not/are not">ではありません (am not/is not/are not)</option>
-                    <option value="ですか/desu ka/am/is/are">ですか？ (am/is/are?)</option>
                 </select>
                 
                 <select id="sov-verb" class="hidden">
@@ -332,6 +371,7 @@
         const sentenceTypeBtns = document.querySelectorAll('.sentence-type button');
         const subjectOptions = document.querySelectorAll('.subject-option');
         const complementOptions = document.querySelectorAll('.complement-option');
+        const tenseOptions = document.querySelectorAll('.tense-option');
         const subject = document.getElementById('subject');
         const customSubject = document.getElementById('customSubject');
         const customAdjective = document.getElementById('customAdjective');
@@ -346,6 +386,7 @@
         const nounComplementSection = document.getElementById('noun-complement-section');
         const complementSection = document.getElementById('complement-section');
         const objectSection = document.getElementById('object-section');
+        const scvVerbSection = document.getElementById('scv-verb-section');
         const japanese = document.getElementById('japanese');
         const english = document.getElementById('english');
         const body = document.body;
@@ -355,6 +396,7 @@
         let currentSentenceType = 'scv';
         let currentSubjectType = 'proper';
         let currentComplementType = 'adjective';
+        let currentTense = 'past';
         
         // ダークモード切り替え
         darkBtn.addEventListener('click', () => {
@@ -380,12 +422,12 @@
                 if (currentSentenceType === 'scv') {
                     complementSection.classList.remove('hidden');
                     objectSection.classList.add('hidden');
-                    scvVerb.classList.remove('hidden');
+                    scvVerbSection.classList.remove('hidden');
                     sovVerb.classList.add('hidden');
                 } else {
                     complementSection.classList.add('hidden');
                     objectSection.classList.remove('hidden');
-                    scvVerb.classList.add('hidden');
+                    scvVerbSection.classList.add('hidden');
                     sovVerb.classList.remove('hidden');
                 }
                 
@@ -425,6 +467,33 @@
                 } else {
                     adjectiveComplementSection.classList.add('hidden');
                     nounComplementSection.classList.remove('hidden');
+                }
+                
+                updateSentence();
+            });
+        });
+        
+        // 時制切り替え
+        tenseOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                tenseOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentTense = option.dataset.tense;
+                
+                // 選択された時制に合う動詞のオプションを表示
+                const verbOptions = scvVerb.querySelectorAll('option');
+                verbOptions.forEach(opt => {
+                    if (opt.dataset.tense === currentTense) {
+                        opt.hidden = false;
+                    } else {
+                        opt.hidden = true;
+                    }
+                });
+                
+                // 最初のオプションを選択
+                const firstVisibleOption = scvVerb.querySelector('option:not([hidden])');
+                if (firstVisibleOption) {
+                    scvVerb.value = firstVisibleOption.value;
                 }
                 
                 updateSentence();
@@ -475,21 +544,25 @@
             let sentenceEn = '';
             
             if (currentSentenceType === 'scv') {
+                const selectedVerbOption = scvVerb.options[scvVerb.selectedIndex];
+                const verbType = selectedVerbOption.dataset.type;
                 const [verbJp, , verbEn] = scvVerb.value.split('/');
                 
-                // 形容詞/名詞と「です」の間にスペースを追加
-                sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}<span class="adjective-space"> </span>${verbJp}`;
+                // 日本語文の生成
+                sentenceJp = `${subJp}<span class="particle">は</span> ${compJp}${verbJp}`;
                 
                 // 英語訳の生成
                 if (currentComplementType === 'adjective') {
-                    sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} ${compEn}`;
-                    if (verbJp.includes('か')) {
-                        sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} ${compEn}?`;
+                    if (verbType === 'question') {
+                        sentenceEn = `${verbEn} ${subEn.toLowerCase()} ${compEn}?`;
+                    } else {
+                        sentenceEn = `${subEn} ${verbEn} ${compEn}`;
                     }
                 } else {
-                    sentenceEn = `${subEn} ${verbEn.replace('am', 'am').replace('are', 'are')} a ${compEn}`;
-                    if (verbJp.includes('か')) {
-                        sentenceEn = `${verbEn.replace('am', 'Are').replace('are', 'Are')} ${subEn.toLowerCase()} a ${compEn}?`;
+                    if (verbType === 'question') {
+                        sentenceEn = `${verbEn} ${subEn.toLowerCase()} a ${compEn}?`;
+                    } else {
+                        sentenceEn = `${subEn} ${verbEn} a ${compEn}`;
                     }
                 }
             } else {
@@ -515,7 +588,8 @@
             el.addEventListener('change', updateSentence);
         });
         
-        // 初期表示
+        // 初期表示 (過去形を選択)
+        document.querySelector('.tense-option[data-tense="past"]').click();
         updateSentence();
     </script>
 </body>
